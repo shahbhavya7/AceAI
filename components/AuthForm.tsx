@@ -8,6 +8,8 @@ import Link from "next/link"
 import { toast } from "sonner";
 import FormField from "./FormField";
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+
 import {
     Form,
     FormControl,
@@ -17,7 +19,6 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-
 const authFormSchema = (type: FormType) => {
     return z.object({
         name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
@@ -30,6 +31,7 @@ const authFormSchema = (type: FormType) => {
 
 const AuthForm = ({ type }: { type: FormType }) => { // Define the type of the form as we conditionally render the form based on the type of the form - sign-in or sign-up
     // 1. Define your form.
+    const router = useRouter()
     const formSchema = authFormSchema(type);
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -40,9 +42,17 @@ const AuthForm = ({ type }: { type: FormType }) => { // Define the type of the f
 
     // 2. Define a submit handler.
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+        try{
+            if (type === "sign-up") {
+                toast.success("Account created successfully! , please sign in to continue.")
+                router.push("/sign-in")
+        }else{
+            toast.success("Sign in successfully!")
+            router.push("/")
+        }
+    }catch(error){
+        toast.error("Something went wrong!")
+    }
     }
 
     const isSignIn = type === "sign-in"; // Check if the form type is sign-in
