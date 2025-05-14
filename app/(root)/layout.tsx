@@ -1,8 +1,13 @@
+import { isAuthenticated } from '@/lib/actions/auth.action';
 import Link from 'next/link'
 import {ReactNode} from 'react'
+import { redirect } from "next/navigation";
 
-const Rootlayout = ({children}:{children: ReactNode}) => { // we are using ReactNode type for children prop to allow any type of children including string, number, element, etc.
+const Rootlayout = async({children}:{children: ReactNode}) => { // we are using ReactNode type for children prop to allow any type of children including string, number, element, etc.
   // children beacause we are using this layout for multiple pages and we want to render the children of the page inside this layout
+  const isUserAuthenticated = await isAuthenticated();
+  if (!isUserAuthenticated) redirect("/sign-in");
+
   return (
     <div className='root-layout'>
       <nav>

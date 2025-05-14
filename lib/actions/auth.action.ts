@@ -97,7 +97,7 @@ export async function signOut() { // sign out user by clearing the session cooki
 }
 
 // Get current user from session cookie
-export async function getCurrentUser(): Promise<User | null> { // get current user from session cookie 
+export async function getCurrentUser(): Promise<User | null> { // get current user from session cookie , promise is used to return user or null x
   const cookieStore = await cookies();
 
   const sessionCookie = cookieStore.get("session")?.value;
@@ -128,5 +128,5 @@ export async function getCurrentUser(): Promise<User | null> { // get current us
 // Check if user is authenticated
 export async function isAuthenticated() {
   const user = await getCurrentUser();
-  return !!user;
+  return !!user; // we can use !! to convert the user object to a boolean value , if user is null then it will return false otherwise true
 }
