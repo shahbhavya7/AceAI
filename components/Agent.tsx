@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import React from 'react'
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { interviewer } from "@/constants";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -32,7 +33,8 @@ const Agent = ({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
 
-  useEffect(() => { // this is react hook which will work when the component is mounted i.e. when the component is rendered
+useEffect(() => { // this is react hook which will work when the component is mounted i.e. when the component is rendered , it tells our application
+    // what it needds to do when certain states of conversation with vapi are triggered
     const onCallStart = () => { // this function will be called when the call starts , it will set the call status to active
       setCallStatus(CallStatus.ACTIVE);
     };
@@ -82,6 +84,40 @@ const Agent = ({
     };
   }, []);
 
+useEffect(() => {
+    if (messages.length > 0) {
+      setLastMessage(messages[messages.length - 1].content);
+    }
+
+    if (callStatus === CallStatus.FINISHED) { // this will be called when the call is finished , it will redirect to the home page not interview page
+      // as interview needs time to be generated
+        router.push("/");
+    }
+  }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
+  
+ const handleCall = async () => {
+    setCallStatus(CallStatus.CONNECTING);
+
+     if (type === "generate") {
+      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+        clientMessages: [],
+        serverMessages: [],
+        variableValues: {
+          username: userName,
+          userid: userId,
+        },
+      });
+    }
+  }
+  
+  const handleDisconnect = () => {
+    setCallStatus(CallStatus.FINISHED);
+    vapi.stop();
+  };
+
+  const latestMessage = messages[messages.length - 1]?.content;
+  const isCallInactiveOrFinished =
+    callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
   
   return (
     <>
@@ -117,7 +153,7 @@ const Agent = ({
         <div className="transcript-border">
           <div className="transcript">
             <p
-              key={lastMessage}
+              key={latestMessage}
               className={cn(
                 "transition-opacity duration-500 opacity-0",
                 "animate-fadeIn opacity-100"
@@ -131,7 +167,7 @@ const Agent = ({
 
       <div className='w-full flex justify-center'>
         {callStatus !== "ACTIVE" ? (
-          <button className='relative btn-call'>
+          <button className='relative btn-call' onClick={handleCall}>
             <span
               className={cn(
                 "absolute animate-ping rounded-full opacity-75",
@@ -139,11 +175,11 @@ const Agent = ({
               )}
             />
             <span className='relative'>
-              {callStatus === "INACTIVE" || callStatus === "FINISHED" ? 'Call' : ' . . .'}
+              {isCallInactiveOrFinished ? 'Call' : ' . . .'}
             </span>
           </button>
         ) : (
-          <button className='btn-disconnect'>
+          <button className='btn-disconnect' onClick={handleDisconnect}>
             END
           </button>
         )}
@@ -151,5 +187,6 @@ const Agent = ({
     </>
   )
 }
+
 
 export default Agent
