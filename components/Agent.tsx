@@ -23,8 +23,8 @@ const Agent = ({
   userName,
   userId,
   interviewId,
-  feedbackId,
   type,
+  feedbackId,
   questions,
 }: AgentProps) => {
   const router = useRouter();
@@ -84,16 +84,34 @@ useEffect(() => { // this is react hook which will work when the component is mo
     };
   }, []);
 
+
 useEffect(() => {
     if (messages.length > 0) {
       setLastMessage(messages[messages.length - 1].content);
     }
+        const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+      console.log("handleGenerateFeedback");
 
-    if (callStatus === CallStatus.FINISHED) { // this will be called when the call is finished , it will redirect to the home page not interview page
-      // as interview needs time to be generated
+      const { success,  id } = {
+        success: true,
+        id: 'feedback-id',
+      }
+
+      if (success && id) {
+        router.push(`/interview/${interviewId}/feedback`);
+      } else {
+        console.log("Error saving feedback");
         router.push("/");
+      }
+    };
+    if (callStatus === CallStatus.FINISHED) {
+      if (type === "generate") {
+        router.push("/");
+      } else {
+        handleGenerateFeedback(messages);
+      }
     }
-  }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
+  }, [messages, callStatus,  interviewId, router, type, userId]);
   
  const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
@@ -105,6 +123,22 @@ useEffect(() => {
         variableValues: {
           username: userName,
           userid: userId,
+        },
+      }); 
+    }else{ // if type is not generate then we are starting the call with interviewer providing the questions for interviewer to ask
+      let formattedQuestions = "";
+      if (questions) {
+        formattedQuestions = questions
+          .map((question) => `- ${question}`)
+          .join("\n");
+      }
+
+      await vapi.start(interviewer, {
+        clientMessages: [],
+        serverMessages: [],
+        variableValues: {
+          questions: formattedQuestions,
+          returnTranscript: true
         },
       });
     }

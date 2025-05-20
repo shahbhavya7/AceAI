@@ -131,36 +131,3 @@ export async function isAuthenticated() {
   return !!user; // we can use !! to convert the user object to a boolean value , if user is null then it will return false otherwise true
 }
 
-export async function getInterviewsByUserId( // get interviews by user id from db
-  userId: string
-): Promise<Interview[] | null> {
-  const interviews = await db
-    .collection("interviews")
-    .where("userId", "==", userId)
-    .orderBy("createdAt", "desc")
-    .get();
-
-  return interviews.docs.map((doc) => ({ // map the interviews to return the data
-    id: doc.id,
-    ...doc.data(),
-  })) as Interview[];
-}
-
-export async function getLatestInterviews( // get latest interviews from db of other users
-  params: GetLatestInterviewsParams
-): Promise<Interview[] | null> {
-  const { userId, limit = 20 } = params;
-
-  const interviews = await db
-    .collection("interviews")
-    .orderBy("createdAt", "desc")
-    .where("finalized", "==", true)
-    .where("userId", "!=", userId)
-    .limit(limit)
-    .get();
-
-  return interviews.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as Interview[];
-}
