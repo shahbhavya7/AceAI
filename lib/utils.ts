@@ -2,7 +2,7 @@ import { interviewCovers, mappings } from "@/constants";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-export function cn(...inputs: ClassValue[]) {
+export function cn(...inputs: ClassValue[]) { // this function is used to merge the class names and remove the duplicates
   return twMerge(clsx(inputs));
 }
 

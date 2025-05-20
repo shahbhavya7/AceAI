@@ -11,10 +11,12 @@ const Page = async() => {
   
   const [userInterviews, allInterview] = await Promise.all([ // this is called parallel fetching i.e it will fetch both the data at the same time using promise.all
     getInterviewsByUserId(user?.id!),
-    getLatestInterviews({ userId: user?.id! }),
+    getLatestInterviews({ userId: user?.id! }), // this is the latest interviews from all the users
   ]);
 
-   const hasPastInterviews = userInterviews?.length! > 0;
+  const hasPastInterviews = userInterviews?.length! > 0;
+  const hasUpcomingInterviews = allInterview?.length! > 0;
+
   return (
     <>
     <section className="card-cta">
@@ -61,9 +63,21 @@ const Page = async() => {
     <section className='flex flex-col gap-6 mt-8'>
       <h2>Take Interviews</h2>
       <div className='interviews-section'>
-      {dummyInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id}/>
-          ))}
+          {hasUpcomingInterviews ? (
+            allInterview?.map((interview) => (
+              <InterviewCard
+                key={interview.id}
+                userId={user?.id}
+                interviewId={interview.id}
+                role={interview.role}
+                type={interview.type}
+                techstack={interview.techstack}
+                createdAt={interview.createdAt}
+              />
+            ))
+          ) : (
+            <p>There are no interviews available</p>
+          )}
       </div>
     </section>
     </>
