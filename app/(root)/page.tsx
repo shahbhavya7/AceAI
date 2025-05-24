@@ -6,6 +6,7 @@ import { dummyInterviews } from '@/constants'
 import InterviewCard from '@/components/InterviewCard'
 import { getCurrentUser } from '@/lib/actions/auth.action'
 import {  getInterviewsByUserId, getLatestInterviews } from '@/lib/actions/general.action'
+import SignOutButton from '@/components/SignOutButton'
 
 const Page = async() => {
   const user = await getCurrentUser();  
@@ -18,8 +19,19 @@ const Page = async() => {
   const hasPastInterviews = userInterviews?.length! > 0;
   const hasUpcomingInterviews = allInterview?.length! > 0;
 
+  
+
   return (
     <>
+
+        <section className="flex justify-between items-center mb-6">
+      <div>
+        <h1 className="text-2xl font-bold">Welcome {user?.name ? `, ${user.name}` : ''}!</h1>
+        <p className="text-gray-600">Ready to practice your next interview?</p>
+      </div>
+     <SignOutButton/>
+    </section>
+
     <section className="card-cta">
       <div className='flex flex-col gap-6 max-w-lg'>
         <h2>Get Interview-Ready with AI-Powered Practice & Feedback</h2>
