@@ -6,10 +6,17 @@ import { cn, getRandomInterviewCover } from '@/lib/utils'
 
 import { Button } from "./ui/button";
 import DisplayTechIcons from './DisplayTechIcons';
+import { getFeedbackByInterviewId } from '@/lib/actions/general.action';
 
 
-const InterviewCard = ({ interviewId, userId, role, type, techstack, createdAt }: InterviewCardProps) => {
-    const feedback = null as Feedback | null;
+const InterviewCard = async({ interviewId, userId, role, type, techstack, createdAt }: InterviewCardProps) => {
+    const feedback =
+    userId && interviewId // if userId and interviewId are both defined then getFeedbackByInterviewId else null
+      ? await getFeedbackByInterviewId({ 
+          interviewId,
+          userId,
+        })
+      : null;
     const normalizedType = /mix/gi.test(type) ? 'Mixed' : type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('DD/MM/YYYY')
     return (

@@ -62,7 +62,7 @@ export async function createFeedback(params: CreateFeedbackParams) { // create f
     return { success: true, feedbackId: feedbackRef.id };
   } catch (error) {
     console.error("Error saving feedback:", error);
-    return { success: false };
+    return { success: false }; // return false if there is an error while saving the feedback
   }
 }
 
@@ -80,6 +80,26 @@ export async function getInterviewsByUserId( // get interviews by user id from d
     id: doc.id,
     ...doc.data(),
   })) as Interview[];
+}
+
+export async function getFeedbackByInterviewId( // It fetches the feedback for a specific interview ID and user ID from the database.
+  params: GetFeedbackByInterviewIdParams  // GetFeedbackByInterviewIdParams is an object that contains the interviewId and userId , it is user defined in the lib/actions/general.action.ts file
+  // in typescript we can define params like this to make it more readable
+): Promise<Feedback | null> { // promise in typescript is a promise that will be resolved or rejected in the future
+  const { interviewId, userId } = params;
+
+  const querySnapshot = await db // get the feedback from db
+    .collection("feedback")
+    .where("interviewId", "==", interviewId)
+    .where("userId", "==", userId)
+    .limit(1) // limit the number of feedbacks to 1
+    .get();
+
+  if (querySnapshot.empty) return null; // return null if there is no feedback
+
+  const feedbackDoc = querySnapshot.docs[0]; // get the first feedback from the querySnapshot
+  return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback; // return { id: feedbackDoc.id, ...feedbackDoc.data() } means return the id and the data of the feedback 
+  // ...feedbackDoc.data() means return all the data of the feedback doc
 }
 
 export async function getLatestInterviews( // get latest interviews from db of other users

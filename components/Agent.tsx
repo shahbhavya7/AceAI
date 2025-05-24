@@ -6,6 +6,7 @@ import React from 'react'
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { interviewer } from "@/constants";
+import { createFeedback } from "@/lib/actions/general.action";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -90,12 +91,16 @@ useEffect(() => {
       setLastMessage(messages[messages.length - 1].content);
     }
         const handleGenerateFeedback = async (messages: SavedMessage[]) => {
-      console.log("handleGenerateFeedback");
+       console.log("handleGenerateFeedback");
 
-      const { success,  id } = {
-        success: true,
-        id: 'feedback-id',
-      }
+      const { success, feedbackId: id } = await createFeedback({ // this function will be called when the call is finished and we need to generate feedback
+        // it will call the createFeedback function from general.action.ts file by passing the interviewId, userId and messages generated during the call
+        // captured by vapi and stored in messages state along with feedbackId if it exists and will return the success status and feedbackId from the db
+        interviewId: interviewId!,
+        userId: userId!,
+        transcript: messages,
+        feedbackId,
+      });
 
       if (success && id) {
         router.push(`/interview/${interviewId}/feedback`);
@@ -134,11 +139,12 @@ useEffect(() => {
       }
 
       await vapi.start(interviewer, {
-        clientMessages: [],
+        clientMessages: [], // client messages are the messages sent by the user during the call
         serverMessages: [],
         variableValues: {
-          questions: formattedQuestions,
-          returnTranscript: true
+          questions: formattedQuestions, // they are the questions that the interviewer will ask during the call
+          returnTranscript: true // this will return the transcript of the call i.e responses from the user and interviewer which will be used to generate feedback
+          // this is important because we need to generate feedback based on the transcript of the call
         },
       });
     }
